@@ -11,6 +11,7 @@ import {
   faTruck,
   faClose,
   faSignOutAlt,
+  faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
@@ -26,19 +27,18 @@ function Header() {
   const navigate = useNavigate();
 
   const categories = [
-    { to: "/Mobile", label: "Mobile" },
-    { to: "/Tv", label: "TV" },
+    { to: "/Mobile", label: "Mobiles" },
+    { to: "/Tv", label: "Electronics" },
     { to: "/Laptop", label: "Laptops" },
-    { to: "/Books", label: "Books" },
+    { to: "/Books", label: "Books & Media" },
     { to: "/Fashion", label: "Fashion" },
-    { to: "/Computer", label: "Computer" },
-    { to: "/Electronic", label: "Electronic" },
-    { to: "#", label: "Sell" },
+    { to: "/Computer", label: "Computers" },
+    { to: "/Electronic", label: "Appliances" },
+    { to: "#", label: "Become a Seller" },
   ];
 
   // Check for login cookies/tokens
   const checkLoginStatus = () => {
-    // Check for common cookie/token names - adjust these based on your app
     const authToken = document.cookie.split(';').find(cookie => 
       cookie.trim().startsWith('authToken=') || 
       cookie.trim().startsWith('token=') ||
@@ -46,7 +46,6 @@ function Header() {
       cookie.trim().startsWith('userToken=')
     );
     
-    // Also check localStorage for tokens if you use them
     const localToken = localStorage.getItem('authToken') || 
                      localStorage.getItem('token') || 
                      localStorage.getItem('jwt') ||
@@ -57,17 +56,14 @@ function Header() {
 
   // Handle logout
   const handleLogout = () => {
-    // Clear all possible cookies
     const cookies = document.cookie.split(';');
     cookies.forEach(cookie => {
       const eqPos = cookie.indexOf('=');
       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-      // Clear cookie by setting expiry date to past
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
     });
     
-    // Clear localStorage
     localStorage.removeItem('authToken');
     localStorage.removeItem('token');
     localStorage.removeItem('jwt');
@@ -75,13 +71,8 @@ function Header() {
     localStorage.removeItem('user');
     localStorage.removeItem('userData');
     
-    // Clear sessionStorage
     sessionStorage.clear();
-    
-    // Update login status
     setIsLoggedIn(false);
-    
-    // Redirect to login page
     navigate('/Login');
   };
 
@@ -89,18 +80,16 @@ function Header() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Navigate to search results page or implement search logic
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-      // Reset search term after search
       setSearchTerm("");
     }
   };
 
   const iconLinks = [
-    { to: "/customer/cart", icon: faShoppingCart, title: "Cart" },
-    { to: "/customer/myorders", icon: faTruck, title: "My Orders" },
+    { to: "/customer/cart", icon: faShoppingCart, title: "Cart", badge: "0" },
+    { to: "/customer/myorders", icon: faTruck, title: "Orders" },
     { to: "/", icon: faHouse, title: "Home" },
-    { to: "/seller/BussinessRegister", icon: faStore, title: "Seller" },
+    { to: "/seller/BussinessRegister", icon: faStore, title: "Sell" },
     ...(isLoggedIn ? 
       [{ action: handleLogout, icon: faSignOutAlt, title: "Logout" }] : 
       [{ to: "/Login", icon: faUser, title: "Login" }]
@@ -108,16 +97,12 @@ function Header() {
   ];
 
   useEffect(() => {
-    // Check login status on component mount and periodically
     const checkStatus = () => {
       setIsLoggedIn(checkLoginStatus());
     };
     
     checkStatus();
-    
-    // Check every 5 seconds for cookie changes
     const interval = setInterval(checkStatus, 5000);
-    
     return () => clearInterval(interval);
   }, []);
 
@@ -128,7 +113,7 @@ function Header() {
       setLastScrollY(currentScrollY);
 
       if (isIconMenuOpen && currentScrollY > lastScrollY) {
-        setIsIconMenuOpen(false); // Auto close on scroll down
+        setIsIconMenuOpen(false);
       }
     };
 
@@ -136,7 +121,6 @@ function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY, isIconMenuOpen]);
 
-  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       const sidebar = document.getElementById("sidebar");
@@ -154,328 +138,360 @@ function Header() {
 
   return (
     <>
-      {/* Top Navbar */}
-      <nav
-        className="navbar navbar-expand-lg fixed-top"
+      {/* Top Header - Desktop & Mobile */}
+      <header
+        className="navbar navbar-expand-lg fixed-top shadow-sm"
         style={{
           zIndex: 1000,
-          backgroundImage:
-            "linear-gradient(to right, rgb(85, 82, 82), black, rgb(206, 200, 200), black)",
-          padding: "10px",
+          backgroundColor: "#2874f0",
+          minHeight: "64px",
+          padding: "8px 0",
         }}
       >
-        <div className="container-fluid">
-          {/* Mobile View */}
-          <div className="d-flex justify-content-between align-items-center w-100 d-lg-none">
-            <Link to="/" className="navbar-brand">
+        <div className="container-fluid px-2 px-md-3">
+          {/* Mobile Layout */}
+          <div className="d-flex d-lg-none align-items-center justify-content-between w-100">
+            {/* Left: Hamburger Menu */}
+            <button 
+              className="btn text-white p-2 sidebar-toggle"
+              onClick={() => setShowSidebar(!showSidebar)}
+              style={{ fontSize: "20px" }}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+
+            {/* Center: Logo */}
+            <Link to="/" className="navbar-brand mx-auto">
               <img
                 src="https://digitalstore.blr1.cdn.digitaloceanspaces.com/main.png"
                 alt="Logo"
-                style={{ height: "40px" }}
+                style={{ height: "32px" }}
               />
             </Link>
+
+            {/* Right: Cart & Login */}
+            <div className="d-flex align-items-center">
+              <Link to="/customer/cart" className="text-white me-2 position-relative">
+                <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style={{ fontSize: "10px" }}>
+                  3
+                </span>
+              </Link>
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="btn text-white p-2"
+                >
+                  <FontAwesomeIcon icon={faSignOutAlt} size="lg" />
+                </button>
+              ) : (
+                <Link to="/Login" className="text-white">
+                  <FontAwesomeIcon icon={faUser} size="lg" />
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* Desktop View */}
-          <div className="d-none d-lg-flex justify-content-between align-items-center w-100">
-            <Link to="/" className="navbar-brand me-3">
-              <img
-                src="https://digitalstore.blr1.cdn.digitaloceanspaces.com/main.png"
-                alt="Logo"
-                style={{ height: "50px" }}
-              />
-            </Link>
+          {/* Desktop Layout */}
+          <div className="d-none d-lg-flex align-items-center justify-content-between w-100">
+            {/* Left Section: Logo + Location */}
+            <div className="d-flex align-items-center me-4">
+              <Link to="/" className="navbar-brand me-4">
+                <img
+                  src="https://digitalstore.blr1.cdn.digitaloceanspaces.com/main.png"
+                  alt="Logo"
+                  style={{ height: "40px" }}
+                />
+              </Link>
+              
+              {/* Location Indicator */}
+              <div className="text-white me-3" style={{ fontSize: "14px" }}>
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="me-1" />
+                <span className="text-white-50">Deliver to</span>
+                <br />
+                <strong>Jaipur 302001</strong>
+              </div>
+            </div>
 
-            {/* Desktop Search Form */}
-            <div className="flex-grow-1 mx-4" style={{ maxWidth: "500px" }}>
-              <form onSubmit={handleSearch} className="position-relative">
-                <div className="input-group">
+            {/* Center: Search Bar - Takes most space */}
+            <div className="flex-grow-1 mx-4" style={{ maxWidth: "600px", minWidth: "300px" }}>
+              <form onSubmit={handleSearch}>
+                <div className="input-group shadow-sm">
                   <input
                     type="text"
-                    className="form-control rounded-pill pe-5"
-                    placeholder="Search products..."
+                    className="form-control border-0"
+                    placeholder="Search for products, brands and more"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ 
-                      paddingRight: "50px",
-                      border: "2px solid #dee2e6",
-                      fontSize: "16px"
+                      fontSize: "16px",
+                      padding: "12px 16px",
+                      backgroundColor: "#fff",
                     }}
                   />
                   <button
                     type="submit"
-                    className="btn position-absolute end-0 top-50 translate-middle-y me-2"
+                    className="btn text-primary"
                     style={{ 
-                      background: "none", 
+                      backgroundColor: "#fff",
                       border: "none",
-                      zIndex: 5,
-                      color: "#6c757d"
+                      borderLeft: "1px solid #dee2e6",
+                      padding: "0 20px"
                     }}
                   >
-                    <FontAwesomeIcon icon={faSearch} />
+                    <FontAwesomeIcon icon={faSearch} size="lg" />
                   </button>
                 </div>
               </form>
             </div>
 
-            <ul className="navbar-nav d-flex flex-row ms-3">
-              {iconLinks.map((link, index) => (
-                <li key={index} className="nav-item mx-2">
-                  {link.to ? (
-                    <Link
-                      to={link.to}
-                      className={`nav-link text-white ${
-                        location.pathname === link.to ? "fw-bold text-warning" : ""
-                      }`}
-                    >
-                      <FontAwesomeIcon icon={link.icon} className="fa-lg" />
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={link.action}
-                      className="nav-link text-white btn border-0 bg-transparent"
-                      style={{ padding: "0.5rem" }}
-                    >
-                      <FontAwesomeIcon icon={link.icon} className="fa-lg" />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            {/* Right Section: User Actions */}
+            <div className="d-flex align-items-center">
+              {/* Login/Account */}
+              {isLoggedIn ? (
+                <div className="dropdown me-4">
+                  <button className="btn text-white dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
+                    <FontAwesomeIcon icon={faUser} className="me-2" />
+                    Account
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li><Link className="dropdown-item" to="/profile">My Profile</Link></li>
+                    <li><Link className="dropdown-item" to="/customer/myorders">Orders</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                  </ul>
+                </div>
+              ) : (
+                <Link to="/Login" className="btn text-white me-4 d-flex align-items-center">
+                  <FontAwesomeIcon icon={faUser} className="me-2" />
+                  Login
+                </Link>
+              )}
+
+              {/* Become a Seller */}
+              <Link to="/seller/BussinessRegister" className="text-white me-4 text-decoration-none">
+                <FontAwesomeIcon icon={faStore} className="me-2" />
+                Become a Seller
+              </Link>
+
+              {/* Orders */}
+              <Link to="/customer/myorders" className="text-white me-4 text-decoration-none d-flex align-items-center">
+                <FontAwesomeIcon icon={faTruck} className="me-2" />
+                Orders
+              </Link>
+
+              {/* Cart with Badge */}
+              <Link to="/customer/cart" className="text-white position-relative d-flex align-items-center text-decoration-none">
+                <FontAwesomeIcon icon={faShoppingCart} className="me-2" size="lg" />
+                Cart
+                <span className="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark" style={{ fontSize: "10px" }}>
+                  3
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Mobile Search Bar */}
       <div
-        className="d-lg-none fixed-top"
+        className="d-lg-none fixed-top bg-white border-bottom"
         style={{
-          top: "70px",
+          top: "64px",
           zIndex: 999,
-          backgroundImage:
-            "linear-gradient(to right, rgb(85, 82, 82), black, rgb(206, 200, 200), black)",
-          padding: "10px",
+          padding: "12px 16px",
         }}
       >
-        <div className="container-fluid">
-          <form onSubmit={handleSearch} className="position-relative">
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control rounded-pill pe-5"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ 
-                  paddingRight: "50px",
-                  border: "2px solid #dee2e6",
-                  fontSize: "16px"
-                }}
-              />
-              <button
-                type="submit"
-                className="btn position-absolute end-0 top-50 translate-middle-y me-2"
-                style={{ 
-                  background: "none", 
-                  border: "none",
-                  zIndex: 5,
-                  color: "#6c757d"
-                }}
-              >
-                <FontAwesomeIcon icon={faSearch} />
-              </button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handleSearch}>
+          <div className="input-group">
+            <input
+              type="text"
+              className="form-control border"
+              placeholder="Search for products, brands and more"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ 
+                fontSize: "16px",
+                padding: "12px 16px",
+              }}
+            />
+            <button
+              type="submit"
+              className="btn btn-outline-primary"
+              style={{ padding: "0 20px" }}
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </div>
+        </form>
       </div>
 
-      {/* Mobile Icon Menu */}
-      {isIconMenuOpen && (
-        <div
-          className="bg-dark rounded p-2 position-fixed d-lg-none"
-          style={{
-            top: "140px",
-            right: "10px",
-            zIndex: 1001,
-          }}
-        >
-          {iconLinks.map((link, index) => (
-            <div key={index}>
-              {link.to ? (
-                <Link
-                  to={link.to}
-                  className={`d-block text-white py-2 px-3 text-decoration-none ${
-                    location.pathname === link.to ? "fw-bold text-warning" : ""
-                  }`}
-                  onClick={() => setIsIconMenuOpen(false)}
-                >
-                  <FontAwesomeIcon icon={link.icon} className="me-2" />
-                  {link.title}
-                </Link>
-              ) : (
-                <button
-                  onClick={() => {
-                    link.action();
-                    setIsIconMenuOpen(false);
+      {/* Category Navigation */}
+      <nav
+        className="navbar navbar-expand-lg bg-white shadow-sm d-none d-lg-block fixed-top"
+        style={{
+          top: "64px",
+          zIndex: 900,
+          padding: "8px 0",
+          transition: "transform 0.3s ease-in-out",
+          transform: showCategoryNav ? "translateY(0)" : "translateY(-100%)",
+        }}
+      >
+        <div className="container-fluid px-3">
+          <ul className="navbar-nav d-flex flex-row w-100 justify-content-start">
+            {categories.map(({ to, label }, index) => (
+              <li key={index} className="nav-item me-4">
+                <Link 
+                  to={to} 
+                  className="nav-link text-dark fw-medium px-0 py-2 position-relative"
+                  style={{ 
+                    fontSize: "16px",
+                    textDecoration: "none",
+                    transition: "color 0.2s ease"
                   }}
-                  className="d-block text-white py-2 px-3 btn border-0 bg-transparent text-start w-100"
-                >
-                  <FontAwesomeIcon icon={link.icon} className="me-2" />
-                  {link.title}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Desktop Category Nav with Toggle Button */}
-      <nav
-        className="navbar navbar-expand-lg d-none d-lg-block fixed-top"
-        style={{
-          top: "80px",
-          zIndex: 900,
-          backgroundColor: "rgb(71, 114, 199)",
-          padding: "10px",
-          transition: "transform 0.3s ease-in-out",
-          transform: showCategoryNav ? "translateY(0)" : "translateY(-100%)",
-        }}
-      >
-        <div className="container-fluid">
-          <div className="d-flex justify-content-start align-items-center w-100">
-            <button 
-              className="btn btn-outline-light sidebar-toggle me-3"
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
-              <FontAwesomeIcon icon={faBars} />
-            </button>
-            <ul className="navbar-nav d-flex flex-row">
-              {categories.map(({ to, label }, index) => (
-                <li key={index} className="nav-item">
-                  <Link 
-                    to={to} 
-                    className="nav-link text-white px-3 py-2"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Category Nav */}
-      <nav
-        className="navbar d-lg-none fixed-top"
-        style={{
-          top: "140px",
-          zIndex: 900,
-          backgroundColor: "rgb(71, 114, 199)",
-          overflowX: "auto",
-          padding: "10px",
-          transition: "transform 0.3s ease-in-out",
-          transform: showCategoryNav ? "translateY(0)" : "translateY(-100%)",
-        }}
-      >
-        <div className="container-fluid">
-          <div className="d-flex justify-content-start align-items-center w-100">
-            <button 
-              className="btn btn-outline-light sidebar-toggle me-3"
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
-              <FontAwesomeIcon icon={faBars} />
-            </button>
-            <div
-              className="d-flex flex-nowrap overflow-auto"
-              style={{ 
-                scrollbarWidth: "none", 
-                msOverflowStyle: "none",
-                WebkitScrollbar: { display: "none" }
-              }}
-            >
-              {categories.map(({ to, label }, index) => (
-                <Link
-                  key={index}
-                  to={to}
-                  className="btn btn-outline-light mx-1 flex-shrink-0"
-                  style={{ whiteSpace: "nowrap" }}
+                  onMouseEnter={(e) => e.target.style.color = "#2874f0"}
+                  onMouseLeave={(e) => e.target.style.color = ""}
                 >
                   {label}
                 </Link>
-              ))}
-            </div>
-          </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+
+      {/* Mobile Category Navigation */}
+      <nav
+        className="d-lg-none fixed-top bg-white border-bottom"
+        style={{
+          top: "120px",
+          zIndex: 900,
+          padding: "12px 0",
+          overflowX: "auto",
+          transition: "transform 0.3s ease-in-out",
+          transform: showCategoryNav ? "translateY(0)" : "translateY(-100%)",
+        }}
+      >
+        <div className="d-flex px-3" style={{ minWidth: "max-content" }}>
+          {categories.map(({ to, label }, index) => (
+            <Link
+              key={index}
+              to={to}
+              className="btn btn-outline-primary me-2 flex-shrink-0"
+              style={{ 
+                whiteSpace: "nowrap",
+                fontSize: "14px",
+                padding: "6px 12px"
+              }}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </nav>
 
       {/* Sidebar */}
       <div 
         id="sidebar"
-        className={`position-fixed bg-white ${showSidebar ? 'show' : ''}`}
+        className={`position-fixed bg-white shadow-lg ${showSidebar ? 'show' : ''}`}
         style={{
           top: 0,
-          left: showSidebar ? 0 : '-300px',
-          width: '300px',
+          left: showSidebar ? 0 : '-320px',
+          width: '320px',
           height: '100vh',
           zIndex: 1500,
           transition: 'left 0.3s ease-in-out',
-          boxShadow: showSidebar ? '5px 0 15px rgba(0,0,0,0.2)' : 'none',
           overflowY: 'auto',
-          paddingTop: '20px'
         }}
       >
-        <div className="d-flex justify-content-between align-items-center px-4 mb-4">
-          <h5 className="m-0 text-dark">Menu</h5>
+        {/* Sidebar Header */}
+        <div className="d-flex justify-content-between align-items-center p-4 border-bottom bg-light">
+          <div className="d-flex align-items-center">
+            <FontAwesomeIcon icon={faUser} className="me-3 text-primary" size="lg" />
+            <div>
+              <h6 className="m-0 text-dark">Hello!</h6>
+              <small className="text-muted">Sign up for best experience</small>
+            </div>
+          </div>
           <button 
-            className="btn btn-outline-dark"
+            className="btn btn-outline-secondary btn-sm"
             onClick={() => setShowSidebar(false)}
           >
             <FontAwesomeIcon icon={faClose} />
           </button>
         </div>
-        <div className="px-4">
+
+        <div className="p-0">
           {/* Categories in sidebar */}
-          <h6 className="text-dark mb-3 fw-bold">Categories</h6>
-          {categories.map(({ to, label }, index) => (
-            <Link 
-              key={index} 
-              to={to} 
-              className="d-block text-dark py-2 text-decoration-none border-bottom"
-              onClick={() => setShowSidebar(false)}
-            >
-              {label}
-            </Link>
-          ))}
+          <div className="border-bottom">
+            <h6 className="text-dark px-4 py-3 mb-0 bg-light fw-bold border-bottom">
+              <FontAwesomeIcon icon={faBars} className="me-2" />
+              Shop by Category
+            </h6>
+            {categories.map(({ to, label }, index) => (
+              <Link 
+                key={index} 
+                to={to} 
+                className="d-block text-dark py-3 px-4 text-decoration-none border-bottom hover-bg"
+                onClick={() => setShowSidebar(false)}
+                style={{ 
+                  fontSize: "16px",
+                  transition: "background-color 0.2s ease"
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = ""}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
           
-          {/* Icon links in sidebar */}
-          <h6 className="text-dark mb-3 mt-4 fw-bold">Quick Links</h6>
-          {iconLinks.map((link, index) => (
-            <div key={index}>
-              {link.to ? (
-                <Link
-                  to={link.to}
-                  className="d-block text-dark py-2 text-decoration-none border-bottom"
-                  onClick={() => setShowSidebar(false)}
-                >
-                  <FontAwesomeIcon icon={link.icon} className="me-3" />
-                  {link.title}
-                </Link>
-              ) : (
-                <button
-                  onClick={() => {
-                    link.action();
-                    setShowSidebar(false);
-                  }}
-                  className="d-block text-dark py-2 text-decoration-none border-bottom btn border-0 bg-transparent text-start w-100"
-                >
-                  <FontAwesomeIcon icon={link.icon} className="me-3" />
-                  {link.title}
-                </button>
-              )}
-            </div>
-          ))}
+          {/* Quick Actions */}
+          <div>
+            <h6 className="text-dark px-4 py-3 mb-0 bg-light fw-bold border-bottom">
+              Quick Actions
+            </h6>
+            {iconLinks.filter(link => link.title !== "Home").map((link, index) => (
+              <div key={index}>
+                {link.to ? (
+                  <Link
+                    to={link.to}
+                    className="d-block text-dark py-3 px-4 text-decoration-none border-bottom position-relative"
+                    onClick={() => setShowSidebar(false)}
+                    style={{ 
+                      fontSize: "16px",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = ""}
+                  >
+                    <FontAwesomeIcon icon={link.icon} className="me-3 text-primary" />
+                    {link.title}
+                    {link.badge && (
+                      <span className="badge bg-warning text-dark ms-2">{link.badge}</span>
+                    )}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => {
+                      link.action();
+                      setShowSidebar(false);
+                    }}
+                    className="d-block text-dark py-3 px-4 text-decoration-none border-bottom btn border-0 bg-transparent text-start w-100"
+                    style={{ 
+                      fontSize: "16px",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = ""}
+                  >
+                    <FontAwesomeIcon icon={link.icon} className="me-3 text-primary" />
+                    {link.title}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -491,9 +507,9 @@ function Header() {
         ></div>
       )}
 
-      {/* Spacers for content below header */}
-      <div className="d-lg-none" style={{ height: "210px" }}></div>
-      <div className="d-none d-lg-block" style={{ height: "160px" }}></div>
+      {/* Spacers for content positioning */}
+      <div className="d-lg-none" style={{ height: "172px" }}></div>
+      <div className="d-none d-lg-block" style={{ height: "112px" }}></div>
     </>
   );
 }
