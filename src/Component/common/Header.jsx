@@ -85,6 +85,17 @@ function Header() {
     navigate('/Login');
   };
 
+  // Handle search functionality
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Navigate to search results page or implement search logic
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      // Reset search term after search
+      setSearchTerm("");
+    }
+  };
+
   const iconLinks = [
     { to: "/customer/cart", icon: faShoppingCart, title: "Cart" },
     { to: "/customer/myorders", icon: faTruck, title: "My Orders" },
@@ -145,11 +156,8 @@ function Header() {
     <>
       {/* Top Navbar */}
       <nav
-        className="navbar navbar-expand-lg"
+        className="navbar navbar-expand-lg fixed-top"
         style={{
-          position: "fixed",
-          top: 0,
-          width: "100%",
           zIndex: 1000,
           backgroundImage:
             "linear-gradient(to right, rgb(85, 82, 82), black, rgb(206, 200, 200), black)",
@@ -178,22 +186,37 @@ function Header() {
               />
             </Link>
 
-            <form className="d-flex align-items-center w-50 position-relative mx-2">
-              <input
-                className="form-control rounded-pill ps-4 pe-5"
-                type="text"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <button
-                className="btn position-absolute end-0 me-2 text-secondary"
-                type="submit"
-                style={{ background: "none", border: "none" }}
-              >
-                <FontAwesomeIcon icon={faSearch} />
-              </button>
-            </form>
+            {/* Desktop Search Form */}
+            <div className="flex-grow-1 mx-4" style={{ maxWidth: "500px" }}>
+              <form onSubmit={handleSearch} className="position-relative">
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control rounded-pill pe-5"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ 
+                      paddingRight: "50px",
+                      border: "2px solid #dee2e6",
+                      fontSize: "16px"
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn position-absolute end-0 top-50 translate-middle-y me-2"
+                    style={{ 
+                      background: "none", 
+                      border: "none",
+                      zIndex: 5,
+                      color: "#6c757d"
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faSearch} />
+                  </button>
+                </div>
+              </form>
+            </div>
 
             <ul className="navbar-nav d-flex flex-row ms-3">
               {iconLinks.map((link, index) => (
@@ -223,35 +246,47 @@ function Header() {
         </div>
       </nav>
 
-      {/* Mobile Search */}
+      {/* Mobile Search Bar */}
       <div
-        className="d-lg-none"
+        className="d-lg-none fixed-top"
         style={{
-          position: "fixed",
-          top: "60px",
-          width: "100%",
+          top: "70px",
           zIndex: 999,
           backgroundImage:
             "linear-gradient(to right, rgb(85, 82, 82), black, rgb(206, 200, 200), black)",
           padding: "10px",
         }}
       >
-        <form className="d-flex align-items-center w-100 position-relative">
-          <input
-            className="form-control rounded-pill ps-4 pe-5"
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button
-            className="btn position-absolute end-0 me-2 text-secondary"
-            type="submit"
-            style={{ background: "none", border: "none" }}
-          >
-            <FontAwesomeIcon icon={faSearch} />
-          </button>
-        </form>
+        <div className="container-fluid">
+          <form onSubmit={handleSearch} className="position-relative">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control rounded-pill pe-5"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  paddingRight: "50px",
+                  border: "2px solid #dee2e6",
+                  fontSize: "16px"
+                }}
+              />
+              <button
+                type="submit"
+                className="btn position-absolute end-0 top-50 translate-middle-y me-2"
+                style={{ 
+                  background: "none", 
+                  border: "none",
+                  zIndex: 5,
+                  color: "#6c757d"
+                }}
+              >
+                <FontAwesomeIcon icon={faSearch} />
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Mobile Icon Menu */}
@@ -259,7 +294,7 @@ function Header() {
         <div
           className="bg-dark rounded p-2 position-fixed d-lg-none"
           style={{
-            top: "110px",
+            top: "140px",
             right: "10px",
             zIndex: 1001,
           }}
@@ -269,7 +304,7 @@ function Header() {
               {link.to ? (
                 <Link
                   to={link.to}
-                  className={`d-block text-white py-2 px-3 ${
+                  className={`d-block text-white py-2 px-3 text-decoration-none ${
                     location.pathname === link.to ? "fw-bold text-warning" : ""
                   }`}
                   onClick={() => setIsIconMenuOpen(false)}
@@ -296,11 +331,9 @@ function Header() {
 
       {/* Desktop Category Nav with Toggle Button */}
       <nav
-        className="mt-2 navbar navbar-expand-lg d-none d-lg-block"
+        className="navbar navbar-expand-lg d-none d-lg-block fixed-top"
         style={{
-          position: "fixed",
-          top: "70px",
-          width: "100%",
+          top: "80px",
           zIndex: 900,
           backgroundColor: "rgb(71, 114, 199)",
           padding: "10px",
@@ -309,17 +342,21 @@ function Header() {
         }}
       >
         <div className="container-fluid">
-          <div className="d-flex justify-content-between align-items-center w-100">
+          <div className="d-flex justify-content-start align-items-center w-100">
             <button 
               className="btn btn-outline-light sidebar-toggle me-3"
               onClick={() => setShowSidebar(!showSidebar)}
             >
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <ul className="navbar-nav me-auto">
+            <ul className="navbar-nav d-flex flex-row">
               {categories.map(({ to, label }, index) => (
                 <li key={index} className="nav-item">
-                  <Link to={to} className="nav-link text-white px-3">
+                  <Link 
+                    to={to} 
+                    className="nav-link text-white px-3 py-2"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
                     {label}
                   </Link>
                 </li>
@@ -331,41 +368,44 @@ function Header() {
 
       {/* Mobile Category Nav */}
       <nav
-        className="navbar d-lg-none"
+        className="navbar d-lg-none fixed-top"
         style={{
-          position: "fixed",
-          top: "110px",
-          width: "100%",
+          top: "140px",
           zIndex: 900,
           backgroundColor: "rgb(71, 114, 199)",
           overflowX: "auto",
-          whiteSpace: "nowrap",
           padding: "10px",
           transition: "transform 0.3s ease-in-out",
           transform: showCategoryNav ? "translateY(0)" : "translateY(-100%)",
         }}
       >
-        <div className="d-flex justify-content-start align-items-center w-100">
-          <button 
-            className="btn btn-outline-light sidebar-toggle me-3"
-            onClick={() => setShowSidebar(!showSidebar)}
-          >
-            <FontAwesomeIcon icon={faBars} />
-          </button>
-          <div
-            className="d-flex flex-nowrap ms-2"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none", maxWidth: "85%" }}
-          >
-            {categories.map(({ to, label }, index) => (
-              <Link
-                key={index}
-                to={to}
-                className="btn btn-outline-light mx-2 mt-2"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                {label}
-              </Link>
-            ))}
+        <div className="container-fluid">
+          <div className="d-flex justify-content-start align-items-center w-100">
+            <button 
+              className="btn btn-outline-light sidebar-toggle me-3"
+              onClick={() => setShowSidebar(!showSidebar)}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+            <div
+              className="d-flex flex-nowrap overflow-auto"
+              style={{ 
+                scrollbarWidth: "none", 
+                msOverflowStyle: "none",
+                WebkitScrollbar: { display: "none" }
+              }}
+            >
+              {categories.map(({ to, label }, index) => (
+                <Link
+                  key={index}
+                  to={to}
+                  className="btn btn-outline-light mx-1 flex-shrink-0"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </nav>
@@ -442,7 +482,7 @@ function Header() {
       {/* Overlay for sidebar */}
       {showSidebar && (
         <div 
-          className="position-fixed top-0 left-0 w-100 h-100"
+          className="position-fixed top-0 start-0 w-100 h-100"
           style={{ 
             backgroundColor: 'rgba(0,0,0,0.5)', 
             zIndex: 1400,
@@ -451,9 +491,9 @@ function Header() {
         ></div>
       )}
 
-      {/* Spacers */}
-      <div className="d-lg-none" style={{ height: "180px" }}></div>
-      <div className="d-none d-lg-block" style={{ height: "130px" }}></div>
+      {/* Spacers for content below header */}
+      <div className="d-lg-none" style={{ height: "210px" }}></div>
+      <div className="d-none d-lg-block" style={{ height: "160px" }}></div>
     </>
   );
 }
